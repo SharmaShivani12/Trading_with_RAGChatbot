@@ -13,38 +13,35 @@ def load_vectorstore():
 
 vectorstore = load_vectorstore()
 
-# -----------------------------
-# Ask RAG with Ollama directly
-# -----------------------------
-def ask_rag(query: str) -> str:
-    try:
-        # 1. Retrieve top docs from FAISS
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-        docs = retriever.get_relevant_documents(query)
-        context = "\n\n".join([doc.page_content for doc in docs])
+from market import get_latest_price, load_crypto_history
+import pandas as pd
 
-        # 2. Construct prompt
-        prompt = f"""
-You are a helpful crypto trading assistant.
-Use the context below to answer the question clearly and concisely.
-If the context is not useful, answer from your trading knowledge.
-If you don’t know, just say: "⚠️ Sorry, I don’t have info on that."
+def ask_rag(query: str):
+    query_lower = query.lower()
+    response_context = ""
 
-Context:
-{context}
+    # --- Price injection ---
+    for symbol in ["btc", "eth", "ada", "ltc", "xrp", "dot", "doge", "sol"]:
+        if symbol in query_lower:
+            # get live price
+            price = get_latest_price(symbol)
+            response_context += f"\nCurrent {symbol.upper()} price: ${price:.2f}"
 
-Question: {query}
+            # get last 7-day trend
+            df = load_crypto_history(symbol)
+            last_7 = df.tail(7)
+            pct_change = ((last_7["Close"].iloc[-1] - last_7["Close"].iloc[0]) / last_7["Close"].iloc[0]) * 100
+            trend = "uptrend 📈" if pct_change > 0 else "downtrend 📉"
+            response_context += f"\n7-day change: {pct_change:.2f}% ({trend})"
 
-Answer:
-"""
+            break  # stop after first match
 
-        # 3. Call Ollama (small CPU-friendly model)
-        response = ollama.chat(
-            model="gemma:2b",   # or "phi:2.7b", whichever you pulled
-            messages=[{"role": "user", "content": prompt}]
-        )
+    # --- Feed into your LLM (Ollama / LangChain pipeline) ---
+    # Instead of just raw query, prepend data
+    prompt = f"User asked: {query}\nHere is some market context:\n{response_context}\nAnswer clearly and short."
+    
+    # call your chatbot here
+    from bot import master_chatbot
+    answer = master_chatbot(prompt)
+    return answer
 
-        return response["message"]["content"].strip()
-
-    except Exception as e:
-        return f"⚠️ Error while searching research docs: {str(e)}"
