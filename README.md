@@ -3,6 +3,7 @@
 
 An AI-powered trading assistant that combines real-time market data (API) with contextual reasoning (RAG).
 
+🚀 Features
 
 ✅ Live Market Data (via CoinGecko API)
 
