@@ -1,3 +1,9 @@
+
+📊 Crypto Trading Assistant
+
+An AI-powered trading assistant that combines real-time market data (API) with contextual reasoning (RAG).
+
+
 ✅ Live Market Data (via CoinGecko API)
 
 Get the latest price of supported coins (BTC, ETH, ADA, LTC, XRP, DOT, DOGE, SOL).
@@ -34,15 +40,17 @@ Handle contextual queries that don’t require real-time data.
 
 "Risks of investing in crypto?"
 
-Python 3.9+
+⚙️ Tech-stack:
 
-Streamlit (UI)
+--Python 3.9+
 
-CoinGecko API (Live Market Data)
+--Streamlit (UI)
 
-LangChain + Ollama (RAG + LLM)
+--CoinGecko API (Live Market Data)
 
-Matplotlib (Charts)
+--LangChain + Ollama (RAG + LLM)
+
+--Matplotlib (Charts)
 
 
 If the query is about definitions, concepts, risks, or general knowledge → it’s answered with RAG.
